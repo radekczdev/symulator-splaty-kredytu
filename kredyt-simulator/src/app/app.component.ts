@@ -71,11 +71,16 @@ export class AppComponent {
       this.margin,
       this.extraPayments
     );
-    this.kapital = this.schedule.reduce((s, p) => s + p.principal, 0);
+
+    this.kapital = this.schedule.reduce((s, p) => s + p.principal + p.extraPayment, 0);
     this.odsetki = this.schedule.reduce((s, p) => s + p.interest, 0);
+
     this.pieOptions = {
       title: { text: 'Kapitał / Odsetki', left: 'center' },
-      tooltip: { trigger: 'item' },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} PLN ({d}%)'
+      },
       legend: { bottom: 0 },
       series: [
         {
@@ -83,8 +88,8 @@ export class AppComponent {
           type: 'pie',
           radius: '50%',
           data: [
-            { value: this.kapital, name: 'Kapitał' },
-            { value: this.odsetki, name: 'Odsetki' }
+            { value: Math.round(this.kapital), name: 'Kapitał' },
+            { value: Math.round(this.odsetki), name: 'Odsetki' }
           ]
         }
       ]
