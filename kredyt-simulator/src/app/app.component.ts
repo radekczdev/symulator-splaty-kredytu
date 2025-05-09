@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {NgxEchartsDirective, provideEchartsCore} from 'ngx-echarts';
@@ -50,6 +50,9 @@ export class AppComponent {
   odsetki = 0;
   pieOptions: any = {};
   fillAllExtra = 0;
+  lastFocusedMonth: number | null = null;
+
+  @ViewChildren('nadplataInput') extraPaymentInputs!: QueryList<ElementRef>;
 
   calculate() {
     // Jeśli ustawiono fillAllExtra, wypełnij wszystkie miesiące tą kwotą
@@ -86,10 +89,14 @@ export class AppComponent {
         }
       ]
     };
+
+    // Schedule focus restoration after view updates
+    setTimeout(() => this.restoreFocus(), 0);
   }
 
   // Aktualizacja nadpłaty w danym miesiącu z tabeli
   updateExtraPayment(month: number, value: string) {
+    this.lastFocusedMonth = month;
     const val = parseFloat(value);
     if (!isNaN(val) && val >= 0) {
       this.extraPayments[month] = val;
@@ -97,5 +104,19 @@ export class AppComponent {
       delete this.extraPayments[month];
     }
     this.calculate();
+  }
+
+  // Restore focus to the last edited input
+  restoreFocus() {
+    if (this.lastFocusedMonth !== null) {
+      const inputToFocus = this.extraPaymentInputs.find((item, index) => {
+        const payment = this.schedule[index];
+        return payment && payment.month === this.lastFocusedMonth;
+      });
+
+      if (inputToFocus) {
+        inputToFocus.nativeElement.focus();
+      }
+    }
   }
 }
