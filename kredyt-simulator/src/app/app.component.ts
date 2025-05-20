@@ -1,6 +1,6 @@
 import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {NgxEchartsDirective, provideEchartsCore} from 'ngx-echarts';
 import * as echarts from 'echarts/core';
 import { PieChart } from 'echarts/charts';
@@ -25,6 +25,7 @@ echarts.use([PieChart, TitleComponent, TooltipComponent, LegendComponent, Canvas
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     NgxEchartsDirective,
     MatToolbarModule,
@@ -40,6 +41,7 @@ echarts.use([PieChart, TitleComponent, TooltipComponent, LegendComponent, Canvas
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  form: FormGroup;
   amount = 300000;
   months = 240;
   wibor = 6.0;
@@ -54,7 +56,23 @@ export class AppComponent {
 
   @ViewChildren('nadplataInput') extraPaymentInputs!: QueryList<ElementRef>;
 
+  constructor(private readonly fb: FormBuilder) {
+    this.form = this.fb.group({
+      amount: [300000, [Validators.required, Validators.min(1)]],
+      months: [240, [Validators.required, Validators.min(1)]],
+      wibor: [6.0, [Validators.required]],
+      margin: [0, [Validators.required]],
+      fillAllExtra: [0]
+    });
+  }
+
   calculate() {
+    const { amount, months, wibor, margin, fillAllExtra } = this.form.value;
+    this.amount = amount;
+    this.months = months;
+    this.wibor = wibor;
+    this.margin = margin;
+    this.fillAllExtra = fillAllExtra;
     // Jeśli ustawiono fillAllExtra, wypełnij wszystkie miesiące tą kwotą
     if (this.fillAllExtra > 0) {
       this.extraPayments = {};
